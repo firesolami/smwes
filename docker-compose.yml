@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: smwes
+      POSTGRES_PASSWORD: smwes
+      POSTGRES_DB: smwes
+    volumes:
+      - smwes_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smwes -d smwes"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://smwes:smwes@db:5432/smwes?schema=public
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-in-production}
+      NODE_ENV: production
+      PORT: "5000"
+      PROLOG_ENGINE_PATH: expert-system/mental_health.pl
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  smwes_pgdata:

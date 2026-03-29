@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  password    String
+  name        String?
+  assessments Assessment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Assessment {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  symptoms        String[]
+  overallSeverity String
+  summary         String
+  results         Json     // Store the condition results as JSON
+  professionals   Json     // Store local professionals as JSON
+  links           Json     // Store help links as JSON
+  createdAt       DateTime @default(now())
+}
